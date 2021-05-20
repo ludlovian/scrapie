@@ -34,6 +34,7 @@ export default class Scrapie {
         this.path.pop()
       }
       this.path.pop()
+      this._callHooks({ tag })
     }
   }
 
@@ -42,26 +43,41 @@ export default class Scrapie {
   }
 
   _callHooks (data) {
-    const { depth } = this
     for (const hook of [...this._hooks]) {
-      if (depth < hook.depth) {
-        this._hooks.delete(hook)
-        continue
-      }
-      hook.fn(data, this)
+      hook.fn.call(this, data, hook.ctx)
     }
   }
 
-  hook (fn) {
-    const { depth } = this
-    this._hooks.add({ depth, fn })
+  addHook (fn, ctx) {
+    const item = { fn, ctx }
+    this._hooks.add(item)
+    return () => this._hooks.delete(item)
   }
 
-  whenTag (when, fn) {
-    this.hook(({ tag }) => tag && when(tag, this) && fn(tag, this))
+  whenTag (when, fn, opts = {}) {
+    const { once, depth = this.depth } = opts
+    const ctx = { once, depth }
+    ctx.remove = this.addHook(handle, ctx)
+
+    function handle ({ tag }, ctx) {
+      if (this.depth < ctx.depth) return ctx.remove()
+      if (!tag || tag.close) return null
+      if (!when(tag)) return null
+      fn(tag)
+      if (ctx.once) ctx.remove()
+    }
   }
 
-  onText (fn) {
-    this.hook(({ text }) => text && fn(text, this))
+  onText (fn, opts = {}) {
+    const { once, depth = this.depth } = opts
+    const ctx = { once, depth }
+    ctx.remove = this.addHook(handle, ctx)
+
+    function handle ({ text }, ctx) {
+      if (this.depth < ctx.depth) return ctx.remove()
+      if (!text) return null
+      fn(text)
+      if (ctx.once) ctx.remove()
+    }
   }
 }

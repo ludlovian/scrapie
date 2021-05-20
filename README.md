@@ -7,7 +7,7 @@ For myself.
 
 But also, most scrapers & parsers do far more than I need. Why learn a
 while new DSL in either XSLT paths or JQuery commands when a few
-lines of JS will do it.
+lines of JS will do it?
 
 It is super simple, very tolerant and docile. Like a sheep.
 
@@ -44,23 +44,27 @@ E.g. `['html', 'body', 'table', 'tr', 'td', 'a']`
 
 And `.depth` is simply the path length.
 
-### .hook(fn)
+### .hook(fn, ctx)
 The guts of it.
 
-The supplied function is called with `({ tag, text }, this)` on each
-tag opening, or text element.
+The supplied function is called with `{ tag, text }` on each
+tag opening, or text element. If a context was supplied when setting up the
+hook, then it will be passed through as the second param.
 
-Hooks added during parsing (i.e. when `depth > 0` are automatically removed
-when the depth goes back above the point where they were added.
+It returns a removal function
 
-This allows you to chain one hook conditional on another.
-
-### .whenTag(condition, action)
+### .whenTag(condition, action, { once })
 A nicer wrapper around `.hook`.
 
 The condition function is called with `(tag, this)`. If it returns truthy
-then the action function is called.
+then the action function is called. If `once` is set, then it will
+autoremove after the action is called
 
-### .onText(action)
+It also automatically unregisters once the depth reduces below
+the level it was at when added, allowing conditional chaining.
+
+### .onText(action, { once })
 A simple wrapper around `.hook` to be called only for text elements.
 
+Like `whenTag`, it offers a once-only option and also automatically
+unregisters when the depth reduces
