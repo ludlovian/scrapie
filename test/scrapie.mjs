@@ -72,7 +72,7 @@ test('special tags', () => {
   assert.equal(res, ['?bar baz?'])
 })
 
-test('once logic', () => {
+test('return false to disable', () => {
   const s = new Scrapie()
   const doc =
     '<foo><bar id="this">and this<p>but not this</bar><bar id="nor this">this neither</bar></foo>'
@@ -81,9 +81,12 @@ test('once logic', () => {
     ({ type }) => type === 'bar',
     ({ attrs }) => {
       res.push(attrs.id)
-      s.onText(txt => res.push(txt), { once: true })
-    },
-    { once: true }
+      s.onText(txt => {
+        res.push(txt)
+        return false
+      })
+      return false
+    }
   )
   s.write(doc)
 

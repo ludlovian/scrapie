@@ -44,27 +44,29 @@ E.g. `['html', 'body', 'table', 'tr', 'td', 'a']`
 
 And `.depth` is simply the path length.
 
-### .hook(fn, ctx)
+### hook(fn, ctx)
 The guts of it.
 
 The supplied function is called with `{ tag, text }` on each
 tag opening, or text element. If a context was supplied when setting up the
 hook, then it will be passed through as the second param.
 
-It returns a removal function
+if the function returns `false` then it will be removed.
 
-### .whenTag(condition, action, { once })
+
+### .whenTag(condition, action)
 A nicer wrapper around `.hook`.
 
 The condition function is called with `(tag, this)`. If it returns truthy
-then the action function is called. If `once` is set, then it will
-autoremove after the action is called
+then the action function is called.
 
 It also automatically unregisters once the depth reduces below
 the level it was at when added, allowing conditional chaining.
 
+As with `.hook`, you can return `false` to remove this hook.
+
 ### .onText(action, { once })
 A simple wrapper around `.hook` to be called only for text elements.
 
-Like `whenTag`, it offers a once-only option and also automatically
-unregisters when the depth reduces
+Like `whenTag` it automatically unregisters when the depth reduces, and you
+can return `false` to remove it.
