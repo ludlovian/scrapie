@@ -2,7 +2,7 @@ const rgxMain = (() => {
   const textElement = '(?<=^|>)' + '([^<]+)' + '(?=<)'
   const cdata = '<!\\[CDATA\\['
   const comment = '<!--'
-  const script = '<script>'
+  const script = '<script(?= |>)'
   const specialElement = '(' + cdata + '|' + script + '|' + comment + ')'
   const tagElement = '(?:<)' + '([^>]*)' + '(?:>)'
   return new RegExp(textElement + '|' + specialElement + '|' + tagElement, 'g')
@@ -10,7 +10,7 @@ const rgxMain = (() => {
 const specials = {
   '<![CDATA[': { rgx: /]]>/, start: 9, end: 3, handler: 'onCData' },
   '<!--': { rgx: /-->/, start: 4, end: 3 },
-  '<script>': { rgx: /<\/script>/, start: 8, end: 9 }
+  '<script': { rgx: /<\/script>/, start: 7, end: 9 }
 }
 const CHUNK = 1024
 
