@@ -33,8 +33,8 @@ export default class Scrapie {
       while (this.depth && this.path[this.depth - 1] !== type) {
         this.path.pop()
       }
-      this.path.pop()
       this._callHooks({ tag })
+      this.path.pop()
     }
   }
 
@@ -53,54 +53,62 @@ export default class Scrapie {
   }
 
   when (fn) {
-    const h = new Hook(this)
+    const h = new Hook(this, fn)
     this._hooks.add(h)
-    return h.when(fn)
-  }
-
-  onText (fn) {
-    this.hook(({ text }, depth) => {
-      if (this.depth < depth) return false
-      if (!text) return
-      return fn(text)
-    }, this.depth)
+    return h
   }
 }
 
 class Hook {
-  constructor (scrapie) {
+  constructor (scrapie, fn) {
     this.scrapie = scrapie
     this.depth = scrapie.depth
-  }
-
-  when (fn) {
     if (typeof fn === 'string') {
       const t = fn
       fn = ({ type }) => type === t
     }
-    this.whenFn = fn
+    this.fnWhen = fn
     return this
   }
 
-  do (fn) {
-    this.doFn = fn
+  onTag (fn) {
+    this.fnTag = fn
     return this
   }
 
   atEnd (fn) {
-    this.endFn = fn
+    this.fnEnd = fn
+    return this
+  }
+
+  onText (fn) {
+    this.fnText = fn
     return this
   }
 
   fn ({ tag }) {
-    if (this.scrapie.depth < this.depth) return this._onEnd()
+    if (this.scrapie.depth < this.depth) return false
     if (!tag || tag.close) return undefined
-    if (!this.whenFn(tag)) return undefined
-    if (this.doFn && this.doFn(tag) === false) return this._onEnd()
-  }
+    if (!this.fnWhen(tag)) return undefined
+    const ctx = {}
+    if (this.fnTag && this.fnTag(tag, ctx) === false) return false
+    if (this.fnEnd) {
+      this.scrapie.hook(({ tag }, depth) => {
+        if (!tag) return
+        const currDepth = this.scrapie.depth
+        if (currDepth < depth) return false
+        if (currDepth > depth) return undefined
+        if (tag.close) this.fnEnd(ctx)
+        return false
+      }, this.scrapie.depth)
+    }
 
-  _onEnd () {
-    if (this.endFn) this.endFn()
-    return false
+    if (this.fnText) {
+      this.scrapie.hook(({ text }, depth) => {
+        if (!text) return
+        if (this.scrapie.depth < depth) return false
+        return this.fnText(text, ctx)
+      }, this.scrapie.depth)
+    }
   }
 }

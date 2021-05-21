@@ -50,7 +50,7 @@ The guts of it.
 The supplied function is called with `{ tag, text }` on:
 
 - each tag opening, after the tag has been added to the path
-- each tag closing, after the tag has been removed from the path
+- each tag closing, just before removing from the path
 - each text element.
 
 Self-closing tags result in only one call, but with `.selfClose = true`.
@@ -58,10 +58,8 @@ Self-closing tags result in only one call, but with `.selfClose = true`.
 If a context was supplied when setting up the
 hook, then it will be passed through unchanged as the second param.
 
-if the function returns `false` then it will be removed.
+If the function returns `false` then it will be removed.
 
-
-Like It autoremove
 
 ### .when(condition)
 A nicer wrapper around `.hook`. This creates a hook which will automatically
@@ -69,28 +67,31 @@ be removed when the parser's depth rises above the level it was at when
 the hook was added. This allows you to do conditional hooks.
 
 If the condition is simply a string, then it is assumed to be a test against
-a tag's `type`. Else it should be a function taking the tag as an argument
-and returning a Boolean.
+a tag's `type`. Else it should be a function `(tag, ctx) => Boolean`.
 
-The method returns a `Hook` object, which has the following methods.
+The second arg is a context is set as an empty object, and also passed through
+to the other callbacks.
 
-#### .do(fn)
+The method returns a `Hook` object, which has the following methods, each of
+which return the same object to allow chaining.
 
-Sets the function to be called, passing the tag as a parameter, when the hook's condition is true.
-Also returns the hook to allow chaining.
+#### .onTag(fn)
+
+Sets the function to be called when entering a tag that meets the condition.
+
+The function receives `(tag, ctx)`. If it returns false, then the whole
+conditional hook will be uninstalled.
 
 #### .atEnd(fn)
 
-Sets a function to be called when the hook is removed.
+Sets a function to be called when the tag is closed..
+The function recieves `(ctx)`. Self-closing tags do not result in a call.
 
-Obviously a hook added before parsing starts (`depth === 0`) is never auto-removed, so
-this will never be called.
+#### .onText(fn)
 
-### .onText(action, { once })
-A simple wrapper around `.hook` to be called only for text elements.
-
-Like `.when` it auto-removes once the parser's rises above the point at which
-it was installed.
+Sets a function to be called for any text (at any level) appearing
+inside the selected tag. The function receives `(text, ctx)` and if it
+returns `false` then no further calls will be made whilst in this tag.
 
 ## Example
 
@@ -98,19 +99,18 @@ it was installed.
 const s = new Scrapie()
 
 s.when('table')
-  .do(() => {
+  .onTag(() => {
     s.when('tr')
-      .do(() => {
-        const row = []
-        s.onText(t => {
-          if (s.path.includes('td')) {
-            row.push(t)
-          }
-        })
+      .onTag((tag, ctx) => {
+        ctx.row = []
       })
-      .atEnd({
-        // row is finished
-        postRow(row)
+      .onText((t, ctx) => {
+        if (s.path.includes('td')) {
+            ctx.row.push(t)
+        }
+      })
+      .atEnd(ctx => {
+        postRow(ctx.row)
       })
   })
 
