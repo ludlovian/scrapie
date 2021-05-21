@@ -7,26 +7,24 @@ test('basic conditional capture', () => {
   const s = new Scrapie()
   const doc = '<foo><bar>quux</bar>baz</foo>'
   const res = []
-  s.whenTag(
-    ({ type }) => type === 'foo',
-    tag =>
-      s.whenTag(
-        ({ type }) => type === 'bar',
-        () => s.onText(txt => res.push(txt))
-      )
-  )
+  s.when('foo').do(() => {
+    s.when('bar')
+      .do(() => {
+        s.onText(t => res.push(t))
+      })
+      .atEnd(() => res.push('END'))
+  })
   s.write(doc)
 
-  assert.equal(res, ['quux'])
+  assert.equal(res, ['quux', 'END'])
 })
 
 test('cope with non closing tags', () => {
   const s = new Scrapie()
   const doc = '<foo><foo bar="baz">get this<p>and this</foo>not this</foo>'
   const res = []
-  s.whenTag(
-    ({ type, attrs: { bar } }) => type === 'foo' && bar,
-    () => s.onText(txt => res.push(txt))
+  s.when(({ type, attrs: { bar } }) => type === 'foo' && bar).do(() =>
+    s.onText(txt => res.push(txt))
   )
   s.write(doc)
 
@@ -37,13 +35,10 @@ test('self closing tags', () => {
   const s = new Scrapie()
   const doc = '<foo><bar baz="this" />not this</foo>'
   const res = []
-  s.whenTag(
-    ({ type }) => type === 'bar',
-    ({ attrs }) => {
-      res.push(attrs.baz)
-      s.onText(txt => res.push(txt))
-    }
-  )
+  s.when('bar').do(({ attrs }) => {
+    res.push(attrs.baz)
+    s.onText(txt => res.push(txt))
+  })
   s.write(doc)
 
   assert.equal(res, ['this'])
@@ -77,17 +72,14 @@ test('return false to disable', () => {
   const doc =
     '<foo><bar id="this">and this<p>but not this</bar><bar id="nor this">this neither</bar></foo>'
   const res = []
-  s.whenTag(
-    ({ type }) => type === 'bar',
-    ({ attrs }) => {
-      res.push(attrs.id)
-      s.onText(txt => {
-        res.push(txt)
-        return false
-      })
+  s.when('bar').do(({ attrs }) => {
+    res.push(attrs.id)
+    s.onText(txt => {
+      res.push(txt)
       return false
-    }
-  )
+    })
+    return false
+  })
   s.write(doc)
 
   assert.equal(res, ['this', 'and this'])

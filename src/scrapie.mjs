@@ -52,13 +52,10 @@ export default class Scrapie {
     this._hooks.add({ fn, ctx })
   }
 
-  whenTag (when, fn) {
-    this.hook(({ tag }, depth) => {
-      if (this.depth < depth) return false
-      if (!tag || tag.close) return
-      if (!when(tag)) return
-      return fn(tag)
-    }, this.depth)
+  when (fn) {
+    const h = new Hook(this)
+    this._hooks.add(h)
+    return h.when(fn)
   }
 
   onText (fn) {
@@ -67,5 +64,43 @@ export default class Scrapie {
       if (!text) return
       return fn(text)
     }, this.depth)
+  }
+}
+
+class Hook {
+  constructor (scrapie) {
+    this.scrapie = scrapie
+    this.depth = scrapie.depth
+  }
+
+  when (fn) {
+    if (typeof fn === 'string') {
+      const t = fn
+      fn = ({ type }) => type === t
+    }
+    this.whenFn = fn
+    return this
+  }
+
+  do (fn) {
+    this.doFn = fn
+    return this
+  }
+
+  atEnd (fn) {
+    this.endFn = fn
+    return this
+  }
+
+  fn ({ tag }) {
+    if (this.scrapie.depth < this.depth) return this._onEnd()
+    if (!tag || tag.close) return undefined
+    if (!this.whenFn(tag)) return undefined
+    if (this.doFn && this.doFn(tag) === false) return this._onEnd()
+  }
+
+  _onEnd () {
+    if (this.endFn) this.endFn()
+    return false
   }
 }
