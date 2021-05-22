@@ -11,6 +11,7 @@ test('basic conditional capture', () => {
     s.when('bar')
       .onTag((tag, ctx) => {
         ctx.res = []
+        assert.equal(s.path, ['foo', 'bar'])
       })
       .onText((t, ctx) => ctx.res.push(t))
       .atEnd(ctx => res.push(...ctx.res, 'END'))
@@ -48,16 +49,17 @@ test('self closing tags', () => {
 
 test('close non-opened', () => {
   const s = new Scrapie()
-  const doc = '<html><foo></bar>get this</foo></html>'
+  const doc = '<html><foo></bar><baz>get this</baz></foo></html>'
   const res = []
   s.when('html').onTag(() => {
     s.when('foo').onText(assert.unreachable)
+    s.when('baz').onText(assert.unreachable)
   })
 
   s.hook(({ text }) => {
     if (!text) return
     res.push(text)
-    assert.is(s.depth, 0)
+    assert.is(s.depth, 1)
   })
   s.write(doc)
 

@@ -3,7 +3,7 @@ import parseTag from './parse-tag.mjs'
 
 export default class Scrapie {
   constructor () {
-    this.path = []
+    this.parents = []
     this._parser = parseDoc({
       onTag: s => this._onTag(s),
       onText: s => this._onText(s)
@@ -13,8 +13,12 @@ export default class Scrapie {
     this._hooks = new Set()
   }
 
+  get path () {
+    return this.parents.map(({ type }) => type)
+  }
+
   get depth () {
-    return this.path.length
+    return this.parents.length
   }
 
   _onTag (string) {
@@ -26,15 +30,15 @@ export default class Scrapie {
     }
 
     if (!close) {
-      this.path.push(type)
+      this.parents.push(tag)
       this._callHooks({ tag })
-      if (selfClose) this.path.pop()
+      if (selfClose) this.parents.pop()
     } else {
-      while (this.depth && this.path[this.depth - 1] !== type) {
-        this.path.pop()
+      while (this.depth && this.parents[this.depth - 1].type !== type) {
+        this.parents.pop()
       }
       this._callHooks({ tag })
-      this.path.pop()
+      this.parents.pop()
     }
   }
 
@@ -84,10 +88,10 @@ class Matcher {
   }
 
   fn ({ tag }) {
-    if (!tag || tag.close) return undefined
     const { scrapie, fnWhen, fnTag, fnText, fnEnd } = this
     const depth = scrapie.depth
     if (depth < this.depth) return false
+    if (!tag || tag.close) return undefined
     if (!fnWhen(tag)) return undefined
     const ctx = {}
     if (fnTag && fnTag(tag, ctx) === false) return false

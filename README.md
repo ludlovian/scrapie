@@ -35,16 +35,17 @@ Push data in as you get it.
 ### .close
 You don't need to call it, but you can if it gives a sense of closure.
 
-### .path / .depth
-The is maintained during parsing as the list of tags that get you back to the top.
+### .parents / .path / .depth
+The list of parent tags is maintained during parsing, and available
+in three forms.
 
-E.g. `['html', 'body', 'table', 'tr', 'td', 'a']`
+The array of opening tags that got you here is in `.parents` (with root
+being at index 0). The string of types is available as `.path`, and the
+length of either of these arrays is at `.depth`
 
-And `.depth` is simply the path length.
-
-The parser intelligently copes with tags that neither have a mathcing close, nor are markerd
+The parser intelligently copes with tags that neither have a matching close, nor are marked
 as self closing. Usually these are things like `<p>`, `<br>` or `<img>`. When it encounters the
-next closing tag, it pops off enough elements from the path stack to make it match.
+next closing tag, it pops off enough elements from the stack to make it match.
 
 ### hook(fn, ctx)
 The guts of it.
@@ -54,6 +55,9 @@ The supplied function is called on every tag or text with `{ tag, text }` on:
 - each open tag, where the tag has the form `{ type, attrs, selfClose }`
 - each close tag, where the tag has the form `{ type, close }`
 - each text element, where text is just a string.
+
+For both the open and closing tags, the current tag is the last element
+of `.parents`. Yes, I know, it is not really its own parent. Tough.
 
 If a context was supplied when setting up the
 hook, then it will be passed through unchanged as the second param.
