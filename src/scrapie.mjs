@@ -53,20 +53,17 @@ export default class Scrapie {
   }
 
   when (fn) {
-    const h = new Hook(this, fn)
-    this._hooks.add(h)
-    return h
+    const m = new Matcher(this, fn)
+    this._hooks.add(m)
+    return m
   }
 }
 
-class Hook {
+class Matcher {
   constructor (scrapie, fn) {
     this.scrapie = scrapie
     this.depth = scrapie.depth
-    if (typeof fn === 'string') {
-      const t = fn
-      fn = ({ type }) => type === t
-    }
+    if (typeof fn === 'string') fn = makeTypeSelector(fn)
     this.fnWhen = fn
     return this
   }
@@ -87,28 +84,35 @@ class Hook {
   }
 
   fn ({ tag }) {
-    if (this.scrapie.depth < this.depth) return false
     if (!tag || tag.close) return undefined
-    if (!this.fnWhen(tag)) return undefined
+    const { scrapie, fnWhen, fnTag, fnText, fnEnd } = this
+    const depth = scrapie.depth
+    if (depth < this.depth) return false
+    if (!fnWhen(tag)) return undefined
     const ctx = {}
-    if (this.fnTag && this.fnTag(tag, ctx) === false) return false
-    if (this.fnEnd) {
-      this.scrapie.hook(({ tag }, depth) => {
-        if (!tag) return
-        const currDepth = this.scrapie.depth
-        if (currDepth < depth) return false
-        if (currDepth > depth) return undefined
-        if (tag.close) this.fnEnd(ctx)
-        return false
-      }, this.scrapie.depth)
-    }
-
-    if (this.fnText) {
-      this.scrapie.hook(({ text }, depth) => {
-        if (!text) return
-        if (this.scrapie.depth < depth) return false
-        return this.fnText(text, ctx)
-      }, this.scrapie.depth)
-    }
+    if (fnTag && fnTag(tag, ctx) === false) return false
+    if (fnEnd) addAtEndHook(scrapie, fnEnd, ctx)
+    if (fnText) addTextHook(scrapie, fnText, ctx)
   }
+}
+
+const makeTypeSelector = t => ({ type }) => type === t
+
+function addAtEndHook (scrapie, fnEnd, ctx) {
+  scrapie.hook(({ tag }, depth) => {
+    if (!tag) return
+    const currDepth = scrapie.depth
+    if (currDepth < depth) return false
+    if (currDepth > depth) return undefined
+    if (tag.close) fnEnd(ctx)
+    return false
+  }, scrapie.depth)
+}
+
+function addTextHook (scrapie, fnText, ctx) {
+  scrapie.hook(({ text }, depth) => {
+    if (!text) return
+    if (scrapie.depth < depth) return false
+    return fnText(text, ctx)
+  }, scrapie.depth)
 }
