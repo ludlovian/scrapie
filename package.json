@@ -2,7 +2,7 @@
   "name": "scrapie",
   "version": "1.2.1",
   "description": "",
-  "main": "src/scrapie.mjs",
+  "main": "src/index.mjs",
   "scripts": {
     "clean": "rm -rf coverage/ node_modules/.cache/",
     "lint": "standard {src,test}/*.mjs|snazzy",
