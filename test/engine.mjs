@@ -1,11 +1,11 @@
 import { test } from 'uvu'
 import * as assert from 'uvu/assert'
 
-import Parser from '../src/parser.mjs'
+import ParseEngine from '../src/engine.mjs'
 
 test.before.each(ctx => {
   ctx.data = []
-  ctx.parser = new Parser(x => ctx.data.push(x))
+  ctx.parser = new ParseEngine(x => ctx.data.push(x))
 })
 
 test('basic tag & text', ({ parser, data }) => {

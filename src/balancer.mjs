@@ -1,7 +1,7 @@
-import Parser from './parser.mjs'
+import ParseEngine from './engine.mjs'
 
-export default function ClosingParser (handler) {
-  const parser = new Parser(ondata)
+export default function BalanceParser (handler) {
+  const parser = new ParseEngine(ondata)
   const path = []
   const write = parser.write.bind(parser)
   let depth = 0

@@ -1,11 +1,11 @@
 import { test } from 'uvu'
 import * as assert from 'uvu/assert'
 
-import ClosingParser from '../src/closing-parser.mjs'
+import BalanceParser from '../src/balancer.mjs'
 
 test.before.each(ctx => {
   ctx.data = []
-  ctx.parser = new ClosingParser(x => ctx.data.push(x))
+  ctx.parser = new BalanceParser(x => ctx.data.push(x))
 })
 
 test('basic tag & text is passed through', ({ parser, data }) => {

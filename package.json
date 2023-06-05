@@ -4,7 +4,7 @@
   "description": "",
   "type": "module",
   "exports": {
-    ".": "./src/index.mjs",
+    ".": "./src/scrapie.mjs",
     "./parsley": "./src/parsley.mjs"
   },
   "scripts": {

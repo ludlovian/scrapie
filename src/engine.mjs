@@ -30,7 +30,7 @@ const specials = {
 
 const CHUNK = 1024
 
-export default class Parser {
+export default class ParseEngine {
   constructor (handler) {
     this._buffer = ''
     this._special = false

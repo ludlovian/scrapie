@@ -1,7 +1,7 @@
 import { test } from 'uvu'
 import * as assert from 'uvu/assert'
 
-import Scrapie from '../src/index.mjs'
+import Scrapie from '../src/scrapie.mjs'
 
 test('basic conditional capture', () => {
   const scrapie = new Scrapie()

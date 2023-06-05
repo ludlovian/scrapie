@@ -1,9 +1,9 @@
-import ClosingParser from './closing-parser.mjs'
+import BalanceParser from './balancer.mjs'
 
 export default class Scrapie {
   constructor (isChild) {
     if (!this.isChild) {
-      const parser = new ClosingParser(this._ondata.bind(this))
+      const parser = new BalanceParser(this._ondata.bind(this))
       this.write = parser.write.bind(parser)
     }
     this._hooks = {}

@@ -1,4 +1,4 @@
-import closingParser from './closing-parser.mjs'
+import BalanceParser from './balancer.mjs'
 
 const customInspect = Symbol.for('nodejs.util.inspect.custom')
 
@@ -86,7 +86,7 @@ function parseXml (p, xml) {
   let curr // the current element
   const stack = [] // the stack of elements above us
 
-  closingParser(handle).write(xml)
+  new BalanceParser(handle).write(xml)
 
   return curr
 
