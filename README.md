@@ -103,24 +103,13 @@ import Parsley from 'scrapie/parsley'
 const p = new Parsley(xmlText)
 ```
 
-A Parsley is simply an array of elements: open tags, close tags and texts.
+A Parsley is simply an object representing the XML object from
+opening tag to the end of the closing tag.
 
-```
-[
-  { type, attrs, depth },
-  { text, depth },
-  { type, close: true, depth }
-]
-```
-
-
-### .tag => { type, attrs, depth }
-
-Returns the current open tag
-
-### .content => Parsley
-
-Returns the contents of the current tag as a Parsley
+It has three properties:
+- `type` a string
+- `attrs` an object
+- `children` an array of Parsley objects and/or strings
 
 ### .text => String
 
@@ -130,15 +119,17 @@ The first text element in this Parsley
 
 An array of all the text elements in it
 
+### .xml => String
+
+Rebuilds the xml representation
+
 ### .find(condition) => Parsley | null
 
-Returns a subset from the first open tag that matches the condition,
-up to and including the matching close tag.
-
-If there is no such tag, then it returns `null`
+Finds the first child (or grand...-child) matching the condition.
+If there is no such then it returns `null`.
 
 If the condition is a string, then it is simply a match on the `type`.
 
 ### .findAll(condition) => [Parsley,...]
 
-Returns an array of all the matching tags as Parsleys.
+Returns an array of all the matching children as Parsleys, or `null`

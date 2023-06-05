@@ -4,82 +4,54 @@ import * as assert from 'uvu/assert'
 import Parsley from '../src/parsley.mjs'
 
 test('basic cosntruction', () => {
-  const xml = '<foo><bar>quux</bar>baz</foo>'
+  const xml = '<foo><bar>quux</bar>baz<boz /></foo>'
   const p = new Parsley(xml)
 
-  const exp = [
-    { type: 'foo', attrs: {}, depth: 0 },
-    { type: 'bar', attrs: {}, depth: 1 },
-    { text: 'quux', depth: 2 },
-    { type: 'bar', close: true, depth: 1 },
-    { text: 'baz', depth: 1 },
-    { type: 'foo', close: true, depth: 0 }
-  ]
-  assert.equal(p.elems, exp, 'parsed ok')
+  assert.instance(p, Parsley, 'Created ok')
+  assert.is(p.xml, xml, 'captured all the input')
 })
 
 test('basic extract', () => {
-  const xml = ['<foo>', '<bar id=1>', 'quux', '</bar>', '</foo>'].join('')
-
+  const xml = '<a><b x="1">quux</b><b x="2">foobar</b></a>'
   let p = new Parsley(xml)
 
-  p = p.find('bar')
+  p = p.find('b')
 
-  assert.is(p.tag.attrs.id, '1')
-  assert.is(p.elems.length, 3)
-
-  assert.equal(p.content.elems, [{ text: 'quux', depth: 2 }])
-
-  assert.equal(p.text, 'quux')
-  assert.equal(p.text, p.content.text)
+  assert.instance(p, Parsley, 'find is a Parsley')
+  assert.is(p.attrs.x, '1')
+  assert.is(p.type, 'b')
+  assert.is(p.text, 'quux')
+  assert.equal(p.child, 'quux')
+  assert.equal(p.children, ['quux'])
 })
 
 test('multiple extract', () => {
-  const xml = [
-    '<foo>',
-    '<bar id=1>',
-    'quux1',
-    '</bar>',
-    '<bar id=2>',
-    'quux2',
-    '</bar>',
-    '</foo>'
-  ].join('')
-
+  const xml = '<a><b x="1">quux</b><b x="2">foobar</b></a>'
   const p = new Parsley(xml)
 
-  const p1 = p.find('bar')
-  const p2 = p.findAll('bar')
+  const p1 = p.find('b')
+  const p2 = p.findAll('b')
 
-  assert.equal(p1.text, 'quux1')
+  assert.instance(p1, Parsley, 'find is a Parsley')
+  assert.equal(p1.text, 'quux')
 
-  assert.ok(Array.isArray(p2))
+  assert.ok(Array.isArray(p2), 'findAll produces an array')
   assert.ok(p2.every(x => x instanceof Parsley))
 
   assert.equal(
     p2.map(p => p.text),
-    ['quux1', 'quux2']
+    ['quux', 'foobar']
   )
 
-  assert.equal(p.textAll, ['quux1', 'quux2'])
+  assert.equal(p.textAll, ['quux', 'foobar'])
 })
 
 test('functional condition', () => {
-  const xml = [
-    '<foo>',
-    '<bar id=1>',
-    'quux1',
-    '</bar>',
-    '<bar id=2>',
-    'quux2',
-    '</bar>',
-    '</foo>'
-  ].join('')
-
+  const xml = '<a><b x="1">quux</b><b x="2">foobar</b></a>'
   const p = new Parsley(xml)
 
-  const p1 = p.find(({ attrs }) => attrs.id === '2')
-  assert.is(p1.text, 'quux2')
+  const p1 = p.find(p => p.attrs.x === '2')
+  assert.is(p1.text, 'foobar')
 })
 
 test('empty results', () => {
@@ -87,8 +59,7 @@ test('empty results', () => {
 
   const p = new Parsley(xml)
   assert.is(p.find('baz'), null)
-
-  assert.is(p.find('bar').content, null)
+  assert.is(p.findAll('baz'), null)
 })
 
 test.run()
