@@ -73,7 +73,7 @@ function find (p, cond, all) {
       ret = ret.concat(found)
     }
   }
-  return ret.length ? ret : null
+  return all ? ret : null
 }
 
 function makeCondition (cond) {

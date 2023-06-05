@@ -59,7 +59,7 @@ test('empty results', () => {
 
   const p = new Parsley(xml)
   assert.is(p.find('baz'), null)
-  assert.is(p.findAll('baz'), null)
+  assert.equal(p.findAll('baz'), [])
 })
 
 test.run()
