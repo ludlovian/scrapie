@@ -92,7 +92,9 @@ function parseXml (p, xml) {
 
   function handle ({ type, attrs, close, text }) {
     if (type && !close) {
-      for (const k in attrs) attrs[k] = decode(attrs[k])
+      for (const [k, v] of Object.entries(attrs)) {
+        attrs[k] = v ? decode(v) : v
+      }
       const elem = new Parsley({ type, attrs, children: [] })
       if (curr) {
         curr.children.push(elem)
