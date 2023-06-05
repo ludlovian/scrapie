@@ -104,7 +104,7 @@ function parseXml (p, xml) {
     } else if (close) {
       if (stack.length) curr = stack.pop()
     } else if (text) {
-      curr.children.push(decode(text))
+      if (curr) curr.children.push(decode(text))
     }
   }
 }
