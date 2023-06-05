@@ -10,7 +10,7 @@ test('basic conditional capture', () => {
   scrapie
     .when('foo')
     .when('bar')
-    .on('enter', () => res.push('START'))
+    .onEnter(() => res.push('START'))
     .on('text', t => res.push(t))
     .on('exit', () => res.push('END'))
 
@@ -27,8 +27,7 @@ test('capture everything', () => {
   const res = []
 
   scrapie
-    .when('foo')
-    .on('enter', () => res.push('START'))
+    .when('foo', () => res.push('START'))
     .on('exit', () => res.push('END'))
     .on('data', data => res.push(data))
 

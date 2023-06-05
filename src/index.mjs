@@ -9,12 +9,16 @@ export default class Scrapie {
     this._hooks = {}
   }
 
+  onText (callback) {
+    return this.on('data', ({ text }) => text && callback(text, this))
+  }
+
+  onEnter (callback) {
+    return this.on('enter', callback)
+  }
+
   on (event, callback) {
-    if (event === 'text') {
-      event = 'data'
-      const cb = callback
-      callback = ({ text }) => text && cb(text)
-    }
+    if (event === 'text') return this.onText(callback)
     const list = this._hooks[event]
     if (list) list.push(callback)
     else this._hooks[event] = [callback]
@@ -25,7 +29,7 @@ export default class Scrapie {
     const list = this._hooks[event]
     if (!list) return undefined
     for (let i = 0; i < list.length; i++) {
-      list[i](data)
+      list[i](data, this)
     }
   }
 
@@ -33,9 +37,11 @@ export default class Scrapie {
     this._emit('data', data)
   }
 
-  when (fn) {
+  when (fn, callback) {
     if (typeof fn === 'string') fn = makeCondition(fn)
-    return new SubScrapie(this, fn)
+    const s = new SubScrapie(this, fn)
+    if (callback) s.onEnter(callback)
+    return s
   }
 }
 
