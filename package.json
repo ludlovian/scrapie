@@ -2,7 +2,11 @@
   "name": "scrapie",
   "version": "2.2.0",
   "description": "",
-  "main": "src/index.mjs",
+  "type": "module",
+  "exports": {
+     ".":  "./src/index.mjs",
+     "./parsley": "./src/parsley.mjs"
+  },
   "scripts": {
     "clean": "rm -rf coverage/ node_modules/.cache/",
     "lint": "standard {src,test}/*.mjs|snazzy",

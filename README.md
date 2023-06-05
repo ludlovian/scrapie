@@ -1,7 +1,6 @@
 # scrapie
 Ultra-light html &amp; xml parser
 
-
 ## Why?
 
 For myself.
@@ -11,6 +10,8 @@ while new DSL in either XSLT paths or JQuery commands when a few
 lines of JS will do it?
 
 It is super simple, very tolerant and docile. Like a sheep.
+
+The **Parsley** version is even easier. Look below for details.
 
 ### How does it work
 
@@ -91,3 +92,53 @@ for await (const chunk of source) {
   s.write(chunk)
 }
 ```
+
+## Parsley
+
+A simple _whole-text-at-a-time_ approach.
+
+```
+import Parsley from 'scrapie/parsley'
+
+const p = new Parsley(xmlText)
+```
+
+A Parsley is simply an array of elements: open tags, close tags and texts.
+
+```
+[
+  { type, attrs, depth },
+  { text, depth },
+  { type, close: true, depth }
+]
+```
+
+
+### .tag => { type, attrs, depth }
+
+Returns the current open tag
+
+### .content => Parsley
+
+Returns the contents of the current tag as a Parsley
+
+### .text => String
+
+The first text element in this Parsley
+
+### .textAll => [String, ...]
+
+An array of all the text elements in it
+
+### .find(condition) => Parsley | null
+
+Returns a subset from the first open tag that matches the condition,
+up to and including the matching close tag.
+
+If there is no such tag, then it returns `null`
+
+If the condition is a string, then it is simply a match on the `type`.
+
+### .findAll(condition) => [Parsley,...]
+
+Returns an array of all the matching tags as Parsleys.
