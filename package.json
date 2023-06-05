@@ -1,11 +1,11 @@
 {
   "name": "scrapie",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "",
   "type": "module",
   "exports": {
-     ".":  "./src/index.mjs",
-     "./parsley": "./src/parsley.mjs"
+    ".": "./src/index.mjs",
+    "./parsley": "./src/parsley.mjs"
   },
   "scripts": {
     "clean": "rm -rf coverage/ node_modules/.cache/",
